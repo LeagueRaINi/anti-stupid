@@ -1,0 +1,15 @@
+{
+    "command": "start steam://rungameid/230410",
+    "watchlist": [
+        "(?i)ida",
+        "(?i)cheat",
+        "(?i)injector",
+        "(?i)fiddler",
+        "(?i)reclass",
+        "(?i)tcpview",
+        "(?i)xenos",
+        "(?i)apimonitor",
+        "(?i)dbg",
+        "(?i)enghost"
+    ]
+}
