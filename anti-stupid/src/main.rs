@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use tlhelp32::ProcessEntry;
+use sysinfo::{Process, ProcessExt, System, SystemExt};
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -31,13 +31,14 @@ fn main() -> Result<()> {
     )
     .context("Failed to parse config.json")?;
 
-    let proc_list = tlhelp32::Snapshot::new_process().context("Failed to get running processes")?;
-    let proc_list = proc_list
-        .filter(|p| {
-            let exe_name = p.sz_exe_file.to_string_lossy();
-            cfg.watchlist.iter().any(|wp| wp.is_match(&exe_name))
-        })
-        .collect::<Vec<ProcessEntry>>();
+    let mut sys = System::new_all();
+
+    sys.refresh_all();
+
+    let proc_list = sys.processes().iter().filter_map(|(_, p)| {
+        (cfg.watchlist.iter().any(|wp| wp.is_match(p.name())) || matches!(p.exe().file_name(), Some(name) if cfg.watchlist.iter().any(|wp| wp.is_match(&name.to_string_lossy()))))
+            .then_some(p)
+    }).collect::<Vec<&Process>>();
 
     if proc_list.is_empty() {
         let output = process::Command::new("cmd")
@@ -52,11 +53,7 @@ fn main() -> Result<()> {
     } else {
         // TODO!: kill processes?
         for proc in proc_list {
-            println!(
-                "[{:05}] {} is still running!",
-                proc.process_id,
-                proc.sz_exe_file.to_string_lossy()
-            );
+            println!("[{:05}] {} ({:?}) is still running!", proc.pid(), proc.name(), proc.exe());
         }
         // TODO!: retry after keypress?
         io::stdin().read_line(&mut String::new()).unwrap();

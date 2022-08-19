@@ -9,11 +9,11 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 clap = { version = "3.2", default-features = false, features = ["std", "derive"] }
-regex = "1.6.0"
+regex = "1.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_regex = "1.1"
-tlhelp32 = "1.0"
+sysinfo = { version = "0.25", default-features = false }
 
 [profile.release]
 opt-level = 3
